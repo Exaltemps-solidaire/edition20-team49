@@ -1,13 +1,14 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --sdv-marine: #1f3346;
+  --sdv-bleu: #6294c2;
+  --sdv-bleu-clair: #f0f4f9;
+  --sdv-bleu-clair-2: #dee7f2;
+  --sdv-vert-anis: #e1e474;
+  --sdv-vert-anis-fonce: #ccd129;
+  --sdv-blanc: #ffffff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--sdv-bleu-clair);
+  --foreground: var(--sdv-marine);
 }
 
 html {
@@ -26,7 +27,7 @@ body {
   flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-corps), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,8 +43,96 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+h1,
+h2,
+h3 {
+  font-family: var(--font-titres), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  color: var(--sdv-marine);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+button[type="submit"],
+button:not([type="button"]) {
+  background: var(--sdv-bleu);
+  color: var(--sdv-blanc);
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+button[type="submit"]:hover,
+button:not([type="button"]):hover {
+  background: var(--sdv-marine);
+  transform: translateY(-1px);
+}
+
+button[type="button"] {
+  background: transparent;
+  color: var(--sdv-marine);
+  border: 2px solid var(--sdv-bleu-clair-2);
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+input,
+select {
+  border: 2px solid var(--sdv-bleu-clair-2);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  background: var(--sdv-blanc);
+  color: var(--sdv-marine);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--sdv-bleu);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--sdv-blanc);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-top: 0.75rem;
+  box-shadow: 0 2px 12px rgba(31, 51, 70, 0.08);
+}
+
+form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+form label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+[role="alert"] {
+  color: #b3261e;
+  font-weight: 600;
 }

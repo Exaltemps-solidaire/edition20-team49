@@ -82,25 +82,29 @@
 
 ⚠️ Les incidents créés dans cette itération restent en mémoire dans l'API (pas de base de données dans le squelette actuel) : un redémarrage du conteneur les perd, ce qui s'écarte du contrat de déployabilité (point 6, persistance). Acceptable pour une démo de hackathon, mais à signaler au développeur avant la stabilisation finale — ajouter une base deviendrait une itération à part entière si le temps le permet.
 
-## Itération 3 : tableau de bord du directeur et affectation d'un prestataire
+## Itération 3 (redéfinie) : identité visuelle Sport dans la Ville
 
-- **Dans le périmètre** : écran tableau de bord listant tous les incidents déclarés (équipement, terrain, urgence, description, état) ; action « affecter un prestataire et planifier une date » qui fait passer l'incident à l'état « en cours ».
-- **Hors périmètre** : contrôle post-réparation et clôture (itération suivante), gestion des contrats/factures de prestataires (un simple champ texte nom suffit), notifications.
+- **Reprogrammée par le développeur** : à 30 minutes annoncées de la fin du build, le tableau de bord du directeur (plan initial ci-dessous, conservé dans « À venir ») a été reporté au profit d'une stabilisation visuelle pour le pitch, conformément à la règle « temps restant ne permet plus qu'une itération → consacre-la à stabiliser ce qui sera montré ».
+- **Demande initiale du développeur** : shadcn, inspiration Typeform, upload d'image réel, « mode prototype très complet ». Réduite (✂️) au strict tenable dans le budget restant, sans nouvelle dépendance risquée à ce stade :
+  - **Hors périmètre, explicitement coupé** : shadcn/Tailwind (changement de chaîne de build, aurait mérité une entrée `adr.md` et n'était pas sûr à 20 min de la fin) ; upload réel de photo (nouvelle dépendance S3 + bucket + route API dédiée, déjà hors périmètre en itération 2).
+  - **Dans le périmètre** : logo et palette réels de `sportdanslaville.com` (récupérés depuis les variables CSS du thème, pas devinés — voir `docs/charte-graphique-sportdanslaville.md`), police Anton (titres) + Inter (texte, repli libre à Gotham qui est une police commerciale), restylage en CSS pur (cartes, boutons, formulaire) de tous les écrans existants. Aucun changement de logique métier, aucune nouvelle dépendance npm.
 - **Critères d'acceptation** :
-  - Étant donné le persona « directeur national des infrastructures », quand il ouvre le tableau de bord, alors tous les incidents déclarés s'affichent avec leur équipement et leur urgence.
-  - Étant donné un incident à l'état « nouveau », quand le directeur renseigne un prestataire et une date, alors l'incident passe à l'état « en cours » et les deux informations restent visibles.
-  - Étant donné un incident sans prestataire ni date renseignés, quand on tente de le passer « en cours », alors l'action est refusée.
-- **Hypothèse de l'équipe couverte** : « un outil commun permettant d'affecter un prestataire, de planifier la résolution et de suivre les étapes donne au directeur la visibilité nécessaire » (cible : taux de résolution ≥ 70 % dans l'année — mesurable seulement après usage réel, cette itération pose l'outil).
-- **Codage estimé** : 10 minutes
-- **Fichiers prévus** : écran tableau de bord (frontend), formulaire d'affectation, `api/src/routes.ts` (route `PATCH /api/v1/incidents/:id`), `api/src/data.ts` (transition d'état)
-- **Tests unitaires prévus** : 1 à 3, sur la transition d'état (refus si prestataire ou date manquant, passage à « en cours » sinon)
-- **Étapes ajoutées à la démo** : choisir le persona directeur, ouvrir le tableau de bord, affecter un prestataire à l'incident créé en itération 2
-- **Bilan** : _à remplir en fin d'itération_
+  - Étant donné n'importe quel écran (liste des terrains, fiche, choix de persona, déclaration d'incident), quand on l'ouvre, alors le logo Sport dans la Ville et sa palette de couleurs réelle s'affichent, sans régression fonctionnelle.
+  - Étant donné le déploiement suivant le contrat, quand on appelle `/health` et `/sante` sur 8080 et 8081, alors ils répondent toujours `200`.
+- **Fichiers touchés** : `frontend/src/app/globals.css`, `layout.tsx`, `PersonaBandeau.tsx`, `persona.module.css`, `page.module.css`, `frontend/public/brand/logo-sport-dans-la-ville.png`, `docs/charte-graphique-sportdanslaville.md`.
+- **Tests unitaires** : aucun ajouté — itération purement visuelle (CSS Modules), sans nouvelle logique métier ; `npm test` (8 tests existants) repasse inchangé.
+- **Bilan** :
+  - Durée de codage réelle : ~8 minutes.
+  - Les 2 critères sont satisfaits : build + déploiement du front vérifiés, `/` sert bien le logo et les couleurs de marque, `curl localhost:8080/` → `200`, `curl localhost:8081/health` → `200`. `./scripts/verifier-deployabilite.sh` ne signale aucune borne.
+  - Reporté : tableau de bord du directeur (itération « à venir » n°0, ex-itération 3 initiale), shadcn/Tailwind, upload réel de photo — à retailler en itération si du temps reste après le tour de test.
+  - Démo Playwright (hors DoD) : non mise à jour (aucune nouvelle étape fonctionnelle à démontrer, uniquement du style).
 
 ---
 
 ## À venir (non détaillé, revu après chaque itération)
 
+0. Tableau de bord du directeur et affectation d'un prestataire (plan initial de l'itération 3, reporté) : écran tableau de bord listant tous les incidents déclarés (équipement, terrain, urgence, description, état) ; action « affecter un prestataire et planifier une date » qui fait passer l'incident à l'état « en cours » ; refus si prestataire ou date manquant. Fichiers prévus : écran tableau de bord (frontend), `api/src/routes.ts` (`PATCH /api/v1/incidents/:id`), `api/src/data.ts` (transition d'état).
 1. Contrôle post-réparation : le RST enregistre le résultat du contrôle sur l'équipement ; l'incident ne peut être clos sans ce contrôle enregistré (couvre l'hypothèse « taux d'incidents clos avec contrôle post-réparation enregistré », cible 100 %).
 2. Historique complet sur la fiche infrastructure : déclaration, prestataire, date de réparation, résultat du contrôle, pour boucler le scénario (fiche terrain ↔ déclaration ↔ suivi ↔ contrôle).
-3. Stabilisation finale pour le pitch, si le temps restant ne permet plus qu'une itération : figer ce qui fonctionne, vérifier la démo de bout en bout plutôt qu'ajouter du périmètre.
+3. shadcn + Tailwind (si une vraie refonte de composants est encore souhaitée) : à cadrer comme itération dédiée avec entrée `adr.md`, hors budget de fin de hackathon.
+4. Upload réel de photo (S3) : nouvelle dépendance, bucket, route API de lecture ; à cadrer comme itération dédiée.

@@ -1,7 +1,34 @@
 .bandeau {
-  padding: 0.5rem 1rem;
-  background: #f0f2f5;
-  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--sdv-marine);
+  color: var(--sdv-blanc);
   font-size: 0.85rem;
-  font-family: var(--font-geist-sans);
+}
+
+.marque {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-family: var(--font-titres), sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.logo {
+  border-radius: 4px;
+}
+
+.persona a {
+  color: var(--sdv-vert-anis);
+  font-weight: 600;
+}
+
+.persona strong {
+  color: var(--sdv-blanc);
 }

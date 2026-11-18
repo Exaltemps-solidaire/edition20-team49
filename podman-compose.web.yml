@@ -1,0 +1,20 @@
+# Prototype "Terrains en forme" (dossier web/) : un seul conteneur Next.js
+# publié sur 8080 (pages) et 8081 (/api/*), comme l'exige la passerelle.
+# Retour à l'ancienne version : podman compose -f podman-compose.web.yml -p team49web down
+#   puis podman start team49_frontend_1 team49_api_1
+name: team49web
+networks:
+  core-network:
+    external: true
+volumes:
+  web-data: {}
+services:
+  web:
+    image: localhost:5000/team49/web:proto
+    networks: [core-network]
+    ports: ["8080:3000", "8081:3000"]
+    volumes: ["web-data:/app/data"]
+    env_file: [web.env]   # AUTH_SECRET, generated on the VM, git-ignored
+    environment:
+      PUBLIC_URL: https://edition20-team49.exaltemps-space.com
+    restart: unless-stopped

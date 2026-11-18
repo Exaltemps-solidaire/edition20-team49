@@ -62,3 +62,7 @@ id_*
 node_modules/
 __pycache__/
 # END GARDE-FOU DE L'INFRASTRUCTURE — ce dépôt est PUBLIC
+
+# prototype web/
+/web/data/
+web.env

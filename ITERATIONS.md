@@ -25,7 +25,25 @@
 - **Fichiers prévus** : `api/src/data.ts` (terrains et équipements en dur), `api/src/routes.ts` (routes `GET /api/v1/terrains`, `GET /api/v1/terrains/:id`), `frontend/src/app/page.tsx` (liste des terrains), `frontend/src/app/terrains/[id]/page.tsx` (fiche), `.env.example`, `DEPLOIEMENT.md`
 - **Tests unitaires prévus** : 1 à 3, sur la fonction qui retrouve un terrain par id et sur le regroupement des équipements par état
 - **Étapes ajoutées à la démo** : ouvrir l'application, voir la liste des terrains, ouvrir la fiche d'un terrain
-- **Bilan** : _à remplir en fin d'itération (durée de codage réelle, dépassement éventuel, fait, reporté, modifications fichier par fichier)_
+- **Bilan** :
+  - Durée de codage réelle : 3 minutes (budget de 10 minutes largement respecté, pas d'alarme déclenchée).
+  - Critères d'acceptation : les 3 sont satisfaits (liste des terrains avec leur nombre d'équipements, fiche d'un terrain avec équipements et états, `/health` et `/sante` répondent `200` sur 8080 et 8081).
+  - Tests Vitest : 6 ajoutés dans `api/src/routes.test.ts` (recherche d'un terrain par id, regroupement des équipements par état, routes `GET /api/v1/terrains` et `GET /api/v1/terrains/:id`). `npm test` passe.
+  - Reporté : rien pour cette itération.
+  - ⚠️ Démarrage de la plateforme : le premier démarrage (`gitlab-ci-local --force-shell-executor`) a buté sur le quota anonyme de Docker Hub (`toomanyrequests`) pour plusieurs images (registre, Postgres, S3/Seaweedfs, Temporal, Casdoor→Umami en cascade). `registry.internal` et `postgres.internal` ont été récupérés en relançant `podman compose -p core up -d registry postgres` depuis `core-platform/core-platform` une fois le script terminé ; le reste (S3, Temporal, Casdoor, Umami) n'est pas nécessaire à cette itération et n'a pas été relancé. À surveiller si une itération future a besoin de l'un de ces services.
+  - Ce que le harnais a bloqué ou refusé : rien — `verifier-deployabilite.sh` ne signale aucune borne ni alarme, `npm test` passait, le signal à PM Lab est passé du premier coup.
+  - Démo Playwright (hors DoD) : mise à jour avec les 2 nouvelles étapes, mais l'exécution locale contre `http://localhost:8080` échoue — attendu, puisque sur cette machine le port 8080 ne route pas `/api/` (c'est le rôle du proxy d'entrée externe, injoignable d'ici). Seule une exécution contre `$URL_PUBLIQUE` depuis un vrai navigateur peut la valider ; non lancée depuis la VM par construction.
+  - **Modifications** :
+    - `api/src/data.ts` — données en dur de 3 terrains et leurs équipements (état bon/à surveiller/hors service) ; sert les 3 critères.
+    - `api/src/routes.ts` — ajoute `GET /api/v1/terrains` (résumé + nombre d'équipements) et `GET /api/v1/terrains/:id` (fiche complète) ; sert les critères 1 et 2.
+    - `api/src/routes.test.ts` — tests sur le routeur et sur `trouverTerrain` / regroupement par état.
+    - `frontend/src/app/page.tsx` — liste des terrains, appel relatif `/api/v1/terrains` ; sert le critère 1.
+    - `frontend/src/app/terrains/[id]/page.tsx` + `FicheTerrainClient.tsx` — fiche d'un terrain (route statique pré-rendue pour `t1`/`t2`/`t3` via `generateStaticParams`, données lues côté client sur l'API) ; sert le critère 2.
+    - `frontend/src/app/page.module.css` — styles de la liste et de la fiche.
+    - `.env.example`, `DEPLOIEMENT.md` — exigés par le contrat de déployabilité ; sert le critère 3.
+    - `api/Dockerfile`, `frontend/Dockerfile` — images de base qualifiées `docker.io/library/...` (recette du serveur, étape 4).
+    - `podman-compose.yml` — déploiement sur 8080 (frontend) / 8081 (api), rejoint `core-network`.
+    - `e2e/demo.spec.ts` — 2 étapes ajoutées (hors DoD).
 
 ## Itération 2 : choisir son rôle et déclarer un incident
 

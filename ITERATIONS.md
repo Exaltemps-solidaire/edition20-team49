@@ -148,6 +148,26 @@
 
 ---
 
+## Itération 5 : déclaration globale d'incident + vue d'ensemble par urgence au tableau de bord
+
+- **Demande hors passation du développeur**, reçue avec **10 minutes restantes au total** jusqu'à la fin du build. ✂️ À ce stade, aucune itération complète (codage + publication + tour de test) n'était possible. Choix du développeur : coder sans tour de test de l'équipe, publier directement.
+- **Dans le périmètre** : écran global `/declarer-incident` (lien visible sur toutes les pages via `PersonaBandeau`), avec sélection du terrain puis de l'équipement par menus déroulants, réutilisant la route `POST /api/v1/incidents` existante sans changement d'API ; retrait du formulaire par équipement sur la fiche terrain (remplacé par un lien pré-rempli vers l'écran global) ; au tableau de bord directeur, bandeau d'alerte comptant les incidents en urgence haute non résolus, et tri des cartes par urgence (haute en premier) dans chaque colonne.
+- **Hors périmètre** : aucun changement d'API ni de modèle de données (réutilise `creerIncident`, déjà validé et testé) ; aucune nouvelle dépendance.
+- **Critères d'acceptation** :
+  - Étant donné n'importe quel écran, quand on clique « Déclarer un incident » dans le bandeau, alors le formulaire global s'ouvre avec un choix de terrain puis d'équipement.
+  - Étant donné le tableau de bord directeur avec au moins un incident en urgence haute non résolu, quand il s'affiche, alors un message l'indique en haut et les cartes urgentes apparaissent en tête de leur colonne.
+  - Étant donné le déploiement, `/health` et `/sante` répondent toujours `200` sur 8080 et 8081.
+- **Codage réel** : ~8 minutes.
+- **Tests Vitest** : aucun ajouté — aucune nouvelle logique métier (validation déjà couverte par les tests existants sur `creerIncident`), uniquement de la réorganisation UI et un tri côté client. `npm test` repasse inchangé (10 tests).
+- **Tour de test de l'équipe** : **non fait**, par décision explicite du développeur vu le temps restant. À valider par l'équipe après coup sur `$URL_PUBLIQUE`.
+- **Démo Playwright (hors DoD)** : non mise à jour, faute de temps — à faire si une itération suit.
+- **Modifications** :
+  - `frontend/src/app/declarer-incident/page.tsx` (nouveau) — formulaire global, terrain → équipement en cascade via `GET /api/v1/terrains` puis `GET /api/v1/terrains/:id`.
+  - `frontend/src/app/PersonaBandeau.tsx` — lien « Déclarer un incident » visible sur tous les écrans.
+  - `frontend/src/app/terrains/[id]/FicheTerrainClient.tsx` — retrait du formulaire par équipement ; lien vers `/declarer-incident?terrain=<id>` à la place.
+  - `frontend/src/app/tableau-de-bord/page.tsx` — bandeau de synthèse des incidents en urgence haute, tri des cartes par urgence dans chaque colonne.
+- ⚠️ Rappel : les incidents restent en mémoire (pas de base de données) — toujours un écart au contrat de déployabilité, déjà signalé en itération 2.
+
 ## À venir (non détaillé, revu après chaque itération)
 
 1. Contrôle post-réparation : le RST enregistre le résultat du contrôle sur l'équipement ; l'incident ne peut être clos sans ce contrôle enregistré (couvre l'hypothèse « taux d'incidents clos avec contrôle post-réparation enregistré », cible 100 %).

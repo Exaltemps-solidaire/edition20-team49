@@ -22,28 +22,33 @@ export default function PersonaBandeau() {
         />
         <span>Terrains</span>
       </Link>
-      {persona ? (
-        <span>
-          Vous êtes <strong className="text-blanc">{persona.nom}</strong> — {persona.role} ·{" "}
-          {persona.id === "directeur" && (
-            <>
-              <Link href="/tableau-de-bord" className="font-semibold text-vert-anis">
-                tableau de bord
-              </Link>{" "}
-              ·{" "}
-            </>
-          )}
-          <Link href="/qui-etes-vous" className="font-semibold text-vert-anis">
-            changer
-          </Link>
-        </span>
-      ) : (
-        <span>
-          <Link href="/qui-etes-vous" className="font-semibold text-vert-anis">
-            Qui êtes-vous ?
-          </Link>
-        </span>
-      )}
+      <span className="flex items-center gap-4">
+        <Link href="/declarer-incident" className="font-semibold text-vert-anis">
+          Déclarer un incident
+        </Link>
+        {persona ? (
+          <span>
+            Vous êtes <strong className="text-blanc">{persona.nom}</strong> — {persona.role} ·{" "}
+            {persona.id === "directeur" && (
+              <>
+                <Link href="/tableau-de-bord" className="font-semibold text-vert-anis">
+                  tableau de bord
+                </Link>{" "}
+                ·{" "}
+              </>
+            )}
+            <Link href="/qui-etes-vous" className="font-semibold text-vert-anis">
+              changer
+            </Link>
+          </span>
+        ) : (
+          <span>
+            <Link href="/qui-etes-vous" className="font-semibold text-vert-anis">
+              Qui êtes-vous ?
+            </Link>
+          </span>
+        )}
+      </span>
     </div>
   );
 }

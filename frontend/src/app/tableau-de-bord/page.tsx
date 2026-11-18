@@ -35,6 +35,12 @@ const colonnes: { etat: EtatIncident; titre: string }[] = [
   { etat: "resolu", titre: "Résolu" },
 ];
 
+const rangUrgence: Record<NiveauUrgence, number> = { haute: 0, moderee: 1, faible: 2 };
+
+function trierParUrgence(incidents: IncidentDashboard[]): IncidentDashboard[] {
+  return [...incidents].sort((a, b) => rangUrgence[a.urgence] - rangUrgence[b.urgence]);
+}
+
 export default function TableauDeBord() {
   const { persona } = usePersona();
   const [incidents, setIncidents] = useState<IncidentDashboard[] | null>(null);
@@ -103,15 +109,33 @@ export default function TableauDeBord() {
       <main className="flex w-full max-w-5xl flex-col gap-5">
         <h1>Tableau de bord des incidents</h1>
         {!incidents && <p>Chargement…</p>}
-        {incidents && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {colonnes.map((colonne) => (
-              <div key={colonne.etat} className="flex flex-col gap-3">
-                <h2 className="text-sm font-semibold text-marine uppercase">{colonne.titre}</h2>
-                <ul className="flex list-none flex-col gap-3 p-0">
-                  {incidents
-                    .filter((incident) => incident.etat === colonne.etat)
-                    .map((incident) => (
+        {incidents && (() => {
+          const urgents = incidents.filter(
+            (incident) => incident.etat !== "resolu" && incident.urgence === "haute"
+          );
+          return (
+            <>
+              <p
+                className={
+                  urgents.length > 0
+                    ? "font-semibold text-destructive"
+                    : "text-muted-foreground"
+                }
+              >
+                {urgents.length > 0
+                  ? `${urgents.length} incident${urgents.length > 1 ? "s" : ""} en urgence haute demande${
+                      urgents.length > 1 ? "nt" : ""
+                    } votre attention.`
+                  : "Aucun incident en urgence haute en attente."}
+              </p>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {colonnes.map((colonne) => (
+                  <div key={colonne.etat} className="flex flex-col gap-3">
+                    <h2 className="text-sm font-semibold text-marine uppercase">{colonne.titre}</h2>
+                    <ul className="flex list-none flex-col gap-3 p-0">
+                      {trierParUrgence(
+                        incidents.filter((incident) => incident.etat === colonne.etat)
+                      ).map((incident) => (
                       <li key={incident.id}>
                         <Card>
                           <CardContent className="flex flex-col gap-2 text-sm">
@@ -197,11 +221,13 @@ export default function TableauDeBord() {
                         </Card>
                       </li>
                     ))}
-                </ul>
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            </>
+          );
+        })()}
       </main>
     </div>
   );

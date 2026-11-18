@@ -1,0 +1,7 @@
+.bandeau {
+  padding: 0.5rem 1rem;
+  background: #f0f2f5;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.85rem;
+  font-family: var(--font-geist-sans);
+}

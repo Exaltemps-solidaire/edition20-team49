@@ -16,4 +16,20 @@ test("Démo : le cas passant", async ({ page }) => {
     await expect(page.getByRole("heading", { name: /Terrain Les Minguettes/ })).toBeVisible();
     await expect(page.getByText("But côté nord")).toBeVisible();
   });
+
+  await test.step("Je choisis le persona RST", async () => {
+    await page.getByRole("link", { name: "Qui êtes-vous ?" }).click();
+    await page.getByRole("button", { name: /Responsable sportif territorial/ }).click();
+    await expect(page.getByText(/Responsable sportif territorial/)).toBeVisible();
+  });
+
+  await test.step("Je déclare un incident sur un équipement", async () => {
+    await page.getByRole("link", { name: /Terrain Les Minguettes/ }).click();
+    await page.getByRole("button", { name: "Déclarer un incident" }).first().click();
+    await page.getByLabel("Lieu précis").fill("Angle nord");
+    await page.getByLabel("Description").fill("Filet déchiré");
+    await page.getByLabel("Niveau d'urgence").selectOption("moderee");
+    await page.getByRole("button", { name: "Envoyer" }).click();
+    await expect(page.getByText("Filet déchiré")).toBeVisible();
+  });
 });

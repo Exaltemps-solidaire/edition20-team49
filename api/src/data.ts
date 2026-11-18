@@ -52,3 +52,65 @@ export const terrains: Terrain[] = [
 export function trouverTerrain(id: string): Terrain | undefined {
   return terrains.find((terrain) => terrain.id === id);
 }
+
+export function trouverEquipement(id: string): Equipement | undefined {
+  for (const terrain of terrains) {
+    const equipement = terrain.equipements.find((e) => e.id === id);
+    if (equipement) return equipement;
+  }
+  return undefined;
+}
+
+// Magasin des incidents en mémoire : pas de base de données dans le squelette actuel (voir ⚠️ ITERATIONS.md).
+export type NiveauUrgence = "faible" | "moderee" | "haute";
+export type EtatIncident = "nouveau" | "en_cours" | "resolu";
+
+export type Incident = {
+  id: string;
+  equipementId: string;
+  lieu: string;
+  description: string;
+  urgence: NiveauUrgence;
+  photoUrl?: string;
+  etat: EtatIncident;
+  creeLe: string;
+};
+
+const niveauxUrgence: NiveauUrgence[] = ["faible", "moderee", "haute"];
+const incidents: Incident[] = [];
+let prochainId = 1;
+
+export function incidentsDe(equipementId: string): Incident[] {
+  return incidents.filter((incident) => incident.equipementId === equipementId);
+}
+
+export type ErreurValidation = { erreur: string };
+
+export function creerIncident(donnees: {
+  equipementId?: unknown;
+  lieu?: unknown;
+  description?: unknown;
+  urgence?: unknown;
+  photoUrl?: unknown;
+}): Incident | ErreurValidation {
+  const equipementId = typeof donnees.equipementId === "string" ? donnees.equipementId : "";
+  if (!equipementId || !trouverEquipement(equipementId)) {
+    return { erreur: "L'équipement visé est obligatoire et doit exister." };
+  }
+  const urgence = typeof donnees.urgence === "string" ? donnees.urgence : "";
+  if (!niveauxUrgence.includes(urgence as NiveauUrgence)) {
+    return { erreur: "Le niveau d'urgence est obligatoire (faible, moderee ou haute)." };
+  }
+  const incident: Incident = {
+    id: `inc-${prochainId++}`,
+    equipementId,
+    lieu: typeof donnees.lieu === "string" ? donnees.lieu : "",
+    description: typeof donnees.description === "string" ? donnees.description : "",
+    urgence: urgence as NiveauUrgence,
+    photoUrl: typeof donnees.photoUrl === "string" ? donnees.photoUrl : undefined,
+    etat: "nouveau",
+    creeLe: new Date().toISOString(),
+  };
+  incidents.push(incident);
+  return incident;
+}

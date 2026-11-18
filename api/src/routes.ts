@@ -2,11 +2,11 @@
 // Le proxy d'entrée envoie /api/... à ce service sans retirer le préfixe : les routes métier
 // se déclarent donc sous /api/v1/... ; /health et /sante restent à la racine (port 8081).
 
-import { terrains, trouverTerrain } from "./data.ts";
+import { creerIncident, incidentsDe, terrains, trouverTerrain } from "./data.ts";
 
 export type Reponse = { statut: number; corps?: unknown };
 
-export function router(methode: string, url: string): Reponse {
+export function router(methode: string, url: string, corpsBrut?: string): Reponse {
   const chemin = new URL(url, "http://api").pathname;
 
   if (methode === "GET" && (chemin === "/health" || chemin === "/sante")) {
@@ -29,7 +29,28 @@ export function router(methode: string, url: string): Reponse {
     if (!terrain) {
       return { statut: 404 };
     }
-    return { statut: 200, corps: terrain };
+    const corps = {
+      ...terrain,
+      equipements: terrain.equipements.map((equipement) => ({
+        ...equipement,
+        incidents: incidentsDe(equipement.id),
+      })),
+    };
+    return { statut: 200, corps };
+  }
+
+  if (methode === "POST" && chemin === "/api/v1/incidents") {
+    let donnees: Record<string, unknown> = {};
+    try {
+      donnees = corpsBrut ? JSON.parse(corpsBrut) : {};
+    } catch {
+      return { statut: 400, corps: { erreur: "Corps de la requête invalide (JSON attendu)." } };
+    }
+    const resultat = creerIncident(donnees);
+    if ("erreur" in resultat) {
+      return { statut: 400, corps: resultat };
+    }
+    return { statut: 201, corps: resultat };
   }
 
   return { statut: 404 };

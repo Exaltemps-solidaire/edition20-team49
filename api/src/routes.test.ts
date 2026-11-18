@@ -26,6 +26,40 @@ describe("router", () => {
   });
 });
 
+describe("POST /api/v1/incidents", () => {
+  it("refuse une déclaration sans urgence ni équipement valide", () => {
+    const reponse = router("POST", "/api/v1/incidents", JSON.stringify({ lieu: "Angle nord" }));
+    expect(reponse.statut).toBe(400);
+
+    const reponseEquipementInconnu = router(
+      "POST",
+      "/api/v1/incidents",
+      JSON.stringify({ equipementId: "inconnu", urgence: "haute" }),
+    );
+    expect(reponseEquipementInconnu.statut).toBe(400);
+  });
+
+  it("rattache l'incident créé à l'équipement visé, visible sur la fiche du terrain", () => {
+    const creation = router(
+      "POST",
+      "/api/v1/incidents",
+      JSON.stringify({
+        equipementId: "t1-e1",
+        lieu: "Angle nord",
+        description: "Filet déchiré",
+        urgence: "moderee",
+      }),
+    );
+    expect(creation.statut).toBe(201);
+
+    const fiche = router("GET", "/api/v1/terrains/t1");
+    const terrain = fiche.corps as { equipements: Array<{ id: string; incidents: Array<{ etat: string }> }> };
+    const equipement = terrain.equipements.find((e) => e.id === "t1-e1");
+    expect(equipement?.incidents).toHaveLength(1);
+    expect(equipement?.incidents[0].etat).toBe("nouveau");
+  });
+});
+
 describe("trouverTerrain", () => {
   it("retrouve un terrain existant par id et pas un id inconnu", () => {
     expect(trouverTerrain("t1")?.nom).toBe("Terrain Les Minguettes");

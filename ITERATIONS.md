@@ -47,6 +47,7 @@
 
 ## Itération 2 : choisir son rôle et déclarer un incident
 
+- **Plan validé** par le développeur le 2026-11-18 (temps restant annoncé : 40 minutes, contre ~75 minutes attendues à ce stade — ⚠️ écart à surveiller, voir note de replanification en fin d'itération).
 - **Dans le périmètre** : écran « Qui êtes-vous ? » avec une liste fixe de personas (un RST, le directeur national des infrastructures), bouton « Déclarer un incident » depuis la fiche d'un équipement, formulaire (lieu précis, description, niveau d'urgence ; un champ texte pour l'URL d'une photo, pas d'upload réel) ; l'incident créé est rattaché à l'équipement et visible sur sa fiche, à l'état « nouveau ».
 - **Hors périmètre** : upload réel de photo, tableau de bord du directeur, affectation de prestataire, contrôle post-réparation, authentification réelle (aucune vérification d'identité : le choix de persona est déclaratif).
 - **Critères d'acceptation** :
@@ -58,7 +59,26 @@
 - **Fichiers prévus** : composant/contexte de persona (frontend), écran « Qui êtes-vous ? », formulaire de déclaration sur la fiche équipement, `api/src/routes.ts` (route `POST /api/v1/incidents`), `api/src/data.ts` (magasin des incidents en mémoire)
 - **Tests unitaires prévus** : 1 à 3, sur la validation du formulaire (urgence et équipement obligatoires) et sur le rattachement de l'incident créé à l'équipement visé
 - **Étapes ajoutées à la démo** : choisir le persona RST, ouvrir une fiche équipement, déclarer un incident, vérifier qu'il apparaît
-- **Bilan** : _à remplir en fin d'itération_
+- **Bilan** :
+  - Durée de codage réelle : 3 minutes (budget de 10 minutes largement respecté, pas d'alarme déclenchée).
+  - Critères d'acceptation : les 3 sont satisfaits (persona affiché et persistant via le bandeau + `localStorage`, déclaration d'incident par le RST visible sur la fiche équipement à l'état « nouveau », formulaire sans urgence refusé avec message d'erreur affiché).
+  - Tests Vitest : 2 ajoutés dans `api/src/routes.test.ts` (refus sans urgence/équipement valide, rattachement de l'incident créé à l'équipement visé et visibilité sur la fiche du terrain). `npm test` passe (8 tests au total).
+  - Reporté : rien pour cette itération.
+  - ⚠️ Temps restant annoncé en DoR : 40 minutes, contre ~75 minutes attendues par la planification initiale (90 min à l'ouverture, 3 itérations complètes visées). Avec ~25 minutes minimum par itération (codage + publication + tour de test), il ne reste de la marge que pour l'itération 3 elle-même, sans tampon ni 4e itération. Je propose aux cadreurs de traiter l'itération 3 comme la dernière itération de contenu, et de réserver tout temps restant ensuite à la stabilisation plutôt qu'au contrôle post-réparation — à valider par l'équipe.
+  - Ce que le harnais a bloqué ou refusé : rien — `verifier-deployabilite.sh` ne signale aucune borne, `npm test` passait, le signal à PM Lab est passé du premier coup.
+  - Démo Playwright (hors DoD) : 2 nouvelles étapes ajoutées (choix du persona RST, déclaration d'un incident) ; exécution locale non lancée pour la même raison qu'en itération 1 (port 8080 sur la VM ne route pas `/api/`), à valider contre `$URL_PUBLIQUE` par l'équipe.
+  - **Modifications** :
+    - `api/src/data.ts` — magasin des incidents en mémoire, `trouverEquipement`, `incidentsDe`, `creerIncident` avec validation (équipement existant + urgence obligatoire) ; sert les critères 2 et 3.
+    - `api/src/routes.ts` — ajoute `POST /api/v1/incidents` et enrichit `GET /api/v1/terrains/:id` pour inclure les incidents de chaque équipement ; sert les critères 2 et 3.
+    - `api/src/server.ts` — lit le corps des requêtes (POST) avant de router ; nécessaire pour la nouvelle route.
+    - `api/src/routes.test.ts` — tests sur la validation et le rattachement incident→équipement.
+    - `frontend/src/app/persona.tsx` — contexte React des personas (RST, directeur), persistance `localStorage` ; sert le critère 1.
+    - `frontend/src/app/PersonaBandeau.tsx`, `persona.module.css` — bandeau affichant le persona actif, lien pour en changer ; sert le critère 1.
+    - `frontend/src/app/qui-etes-vous/page.tsx` — écran de choix de persona ; sert le critère 1.
+    - `frontend/src/app/layout.tsx` — intègre le `PersonaProvider` et le bandeau à toutes les pages.
+    - `frontend/src/app/terrains/[id]/FicheTerrainClient.tsx` — formulaire de déclaration d'incident par équipement (lieu, description, urgence, URL photo), affichage des incidents existants, message d'erreur si refus serveur ; sert les critères 2 et 3.
+    - `e2e/demo.spec.ts` — 2 étapes ajoutées (hors DoD).
+    - `podman-compose.yml`, images `api`/`frontend` reconstruites et republiées (aucun changement de configuration, juste redéploiement).
 
 ⚠️ Les incidents créés dans cette itération restent en mémoire dans l'API (pas de base de données dans le squelette actuel) : un redémarrage du conteneur les perd, ce qui s'écarte du contrat de déployabilité (point 6, persistance). Acceptable pour une démo de hackathon, mais à signaler au développeur avant la stabilisation finale — ajouter une base deviendrait une itération à part entière si le temps le permet.
 

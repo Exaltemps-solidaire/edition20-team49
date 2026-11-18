@@ -101,10 +101,62 @@
 
 ---
 
+## Demande hors passation du 2026-11-18 : deux interfaces (public + admin), auth, Kanban, carte, notifications
+
+- **Demande du développeur** (reçue en cours de hackathon, hors passation) : interface publique de déclaration (titre, choix du terrain, description, urgence 1-5, upload photo, page de remerciement + lien de suivi copiable), dashboard admin avec auth email/mot de passe, vue Kanban groupée par statut ou par terrain, affectation d'un incident à un prestataire (préempli + ETA), page de suivi public en stepper, panneau de notifications in-app + permission navigateur, icônes/images/mock data, création de nouveaux terrains, carte de France Leaflet avec des implantations Sport dans la Ville. Validée par le développeur : « yes please do it », découpage via `/planifier-iterations` plutôt que codée d'un bloc.
+- **Temps restant annoncé** : 20-40 minutes (question posée le 2026-11-18, en cours d'itération 3 déjà publiée). **Tour de test** : 5 minutes.
+- **Capacité** : une itération coûte au moins 10 min de codage + ~5 min de publication + 5 min de tour de test = 20 min. 20-40 min permettent donc **une itération détaillée ci-dessous avec certitude, une 2e seulement si la 1re va vite et si le temps restant confirmé est proche de 40 min** — à revérifier au début de l'itération 4.
+- ✂️ **Ce qui sort du périmètre de cette fin de hackathon**, par ordre de risque décroissant, à cadrer comme itérations dédiées ultérieures (hors de cette VM, ou en tout début de futur build) :
+  - **Authentification email/mot de passe** : nouvelle dépendance (hash de mot de passe, session), surface de sécurité à ne pas improviser en 10 minutes. Le pattern persona déjà en place (sélection déclarative, pas de vérification d'identité) reste la seule « auth » du hackathon, comme documenté dès l'itération 2 et jamais remis en cause par l'équipe depuis.
+  - **Échelle d'urgence 1-5 et champ « titre »** : ❗️ remplacerait `faible/moderee/haute`, déjà validé côté API et couvert par 2 tests Vitest passants depuis l'itération 2 (`api/src/routes.test.ts`) et affiché sur 3 écrans. Un changement de modèle de données à ce stade casserait des tests qui passent sans bénéfice démontrable supplémentaire pour le pitch. Conservé tel quel.
+  - **Upload réel de photo** : déjà écarté explicitement en itération 3 (nouvelle dépendance S3 + bucket + route API) ; toujours hors budget.
+  - **Page de suivi public en stepper + lien de tracking copiable** : suppose un identifiant d'incident non devinable côté public et un écran dédié ; pas de valeur de démo supplémentaire tant que le dashboard admin (ci-dessous) n'existe pas encore.
+  - **Notifications in-app + permission navigateur** : fonctionnalité transverse, peu démontrable en pitch statique, dépend d'un dashboard déjà fonctionnel.
+  - **Carte Leaflet + scraping de sportdanslaville.com** : dépendance cartographique nouvelle (`leaflet`, `react-leaflet`) non installée, et la page source n'est pas accessible depuis cette VM (pas de réseau sortant vers l'extérieur) — resterait des coordonnées inventées, ce que `CLAUDE.md` interdit (« inventer une fonctionnalité/donnée absente de la passation »).
+  - **Création de nouveaux terrains** (formulaire admin) : fonctionnalité CRUD supplémentaire, pas le cœur de la demande (le suivi des incidents existants prime).
+- **Dans le périmètre de l'itération 4 (détaillée ci-dessous)** : la partie à la fois la plus demandée et la moins risquée — un tableau de bord admin en colonnes par statut (« Kanban style »), réutilisant le persona « directeur » déjà existant comme accès (pas de nouvelle auth), avec affectation d'un incident à un prestataire (champ texte + ETA) et changement de statut. C'est la reprise quasi telle quelle de l'item 0 déjà planifié (« Tableau de bord du directeur et affectation d'un prestataire »), reformulée en colonnes par statut pour coller à la demande Kanban.
+
+## Itération 4 : tableau de bord admin en colonnes par statut (Kanban) avec affectation de prestataire
+
+- **Dans le périmètre** : écran `/tableau-de-bord`, visible quand le persona actif est le directeur (sinon lien vers « Qui êtes-vous ? », même pattern qu'aujourd'hui) ; les incidents de tous les terrains groupés en 3 colonnes — Nouveau / En cours / Résolu ; chaque carte montre terrain, équipement, urgence, description ; sur une carte « Nouveau », un petit formulaire (prestataire, ETA) l'affecte et la fait passer en « En cours » ; sur une carte « En cours », un bouton « Marquer résolu » la fait passer en « Résolu ».
+- **Hors périmètre** : authentification réelle, upload de photo, échelle d'urgence 1-5, page de suivi public, notifications, carte Leaflet, création de terrain — voir justification ci-dessus.
+- **Critères d'acceptation** :
+  - Étant donné le tableau de bord ouvert avec le persona directeur, quand il s'affiche, alors les incidents existants apparaissent répartis dans 3 colonnes selon leur statut.
+  - Étant donné un incident « nouveau », quand le directeur renseigne un prestataire et une ETA puis valide, alors l'incident passe en colonne « En cours » et affiche ces deux informations.
+  - Étant donné un incident « en cours », quand le directeur clique « Marquer résolu », alors il passe en colonne « Résolu ».
+- **Hypothèse de l'équipe couverte** : prérequis de « contrôle post-réparation enregistré » (item 1 de la liste « À venir ») — il faut qu'un incident puisse être suivi d'un statut à l'autre avant de pouvoir y accrocher un contrôle.
+- **Codage estimé** : 10 minutes
+- **Fichiers prévus** : `api/src/data.ts` (transitions d'état + champs `prestataire`/`eta`), `api/src/routes.ts` (`PATCH /api/v1/incidents/:id`), `api/src/routes.test.ts`, `frontend/src/app/tableau-de-bord/page.tsx` (nouveau, composants shadcn déjà en place : `Card`, `Button`, `Input`, `Label`)
+- **Tests unitaires prévus** : 2 à 3, sur la transition nouveau→en_cours (refus si prestataire ou ETA manquant) et en_cours→résolu
+- **Étapes ajoutées à la démo** : ouvrir le tableau de bord en tant que directeur, affecter un prestataire à un incident, le marquer résolu
+- **Bilan** :
+  - Temps restant redemandé au développeur : il venait de répondre « 20-40 min » / tour de test « 5 min » dans `/planifier-iterations` à l'instant précédent dans le même échange ; je n'ai pas reposé la question (aucune minute écoulée entretemps) plutôt que de la reposer mécaniquement — à reposer explicitement si une nouvelle itération suit après un vrai écart de temps.
+  - Durée de codage réelle : 2 minutes (budget de 10 minutes largement respecté, pas d'alarme déclenchée).
+  - Critères d'acceptation : les 3 sont satisfaits (tableau de bord en 3 colonnes Nouveau/En cours/Résolu visible au persona directeur, affectation prestataire+ETA qui fait passer un incident en « En cours » avec les infos affichées, bouton « Marquer résolu » qui passe l'incident en « Résolu »).
+  - Tests Vitest : 2 ajoutés dans `api/src/routes.test.ts` (refus de l'affectation sans ETA, transition complète nouveau→en_cours→résolu). `npm test` passe (10 tests au total).
+  - Reporté : rien pour cette itération ; le reste de la demande du développeur (auth réelle, urgence 1-5, upload photo, page de suivi public, notifications, carte Leaflet, création de terrain) reste dans « À venir » tel que découpé en amont.
+  - Ce que le harnais a bloqué ou refusé : rien — `verifier-deployabilite.sh` ne signale aucune borne, `npm test` passait, le signal à PM Lab (version 4) est passé du premier coup.
+  - Démo Playwright (hors DoD) : 3 nouvelles étapes ajoutées (passage au persona directeur + ouverture du tableau de bord, affectation d'un prestataire, marquage résolu) ; l'étape existante de sélection de l'urgence a aussi été corrigée pour utiliser le `Select` shadcn (clic + option) au lieu de `.selectOption()` sur un `<select>` natif, cassée par la migration shadcn de l'itération 3bis. Exécution locale non lancée (port 8080 sur la VM ne route pas `/api/`), à valider contre `$URL_PUBLIQUE` par l'équipe.
+  - **Modifications** :
+    - `api/src/data.ts` — ajoute `tousLesIncidents`, `trouverIncident`, `affecterPrestataire` (validation prestataire+ETA obligatoires, transition vers `en_cours`), `marquerResolu` (transition vers `resolu`), champs `prestataire`/`eta` sur `Incident` ; sert les critères 2 et 3.
+    - `api/src/routes.ts` — ajoute `GET /api/v1/incidents` (tous les incidents enrichis du nom du terrain/équipement) et `PATCH /api/v1/incidents/:id` (affectation ou résolution) ; sert les 3 critères.
+    - `api/src/routes.test.ts` — tests sur le refus sans ETA et sur la transition complète d'état.
+    - `frontend/src/app/tableau-de-bord/page.tsx` — nouvel écran, accès conditionné au persona directeur, colonnes par statut, formulaire d'affectation, bouton de résolution ; sert les 3 critères.
+    - `frontend/src/app/PersonaBandeau.tsx` — lien « tableau de bord » visible uniquement pour le persona directeur.
+    - `e2e/demo.spec.ts` — 3 étapes ajoutées, 1 étape existante corrigée (hors DoD).
+    - `podman-compose.yml` (inchangé), images `api`/`frontend` reconstruites et republiées ; déploiement vérifié (`curl localhost:8080/` → 200, `curl localhost:8081/health` → `{"status":"ok"}`, `/tableau-de-bord` → 200).
+
+---
+
 ## À venir (non détaillé, revu après chaque itération)
 
-0. Tableau de bord du directeur et affectation d'un prestataire (plan initial de l'itération 3, reporté) : écran tableau de bord listant tous les incidents déclarés (équipement, terrain, urgence, description, état) ; action « affecter un prestataire et planifier une date » qui fait passer l'incident à l'état « en cours » ; refus si prestataire ou date manquant. Fichiers prévus : écran tableau de bord (frontend), `api/src/routes.ts` (`PATCH /api/v1/incidents/:id`), `api/src/data.ts` (transition d'état).
 1. Contrôle post-réparation : le RST enregistre le résultat du contrôle sur l'équipement ; l'incident ne peut être clos sans ce contrôle enregistré (couvre l'hypothèse « taux d'incidents clos avec contrôle post-réparation enregistré », cible 100 %).
 2. Historique complet sur la fiche infrastructure : déclaration, prestataire, date de réparation, résultat du contrôle, pour boucler le scénario (fiche terrain ↔ déclaration ↔ suivi ↔ contrôle).
-3. shadcn + Tailwind (si une vraie refonte de composants est encore souhaitée) : à cadrer comme itération dédiée avec entrée `adr.md`, hors budget de fin de hackathon.
-4. Upload réel de photo (S3) : nouvelle dépendance, bucket, route API de lecture ; à cadrer comme itération dédiée.
+3. Interface publique dédiée (titre + terrain + description + urgence + photo + page de remerciement + lien de suivi) : reformulation de l'écran de déclaration actuel en écran autonome, hors fiche équipement ; à cadrer si le temps le permet après l'itération 4.
+4. Page de suivi public en stepper, à partir d'un lien copiable.
+5. Authentification email/mot de passe réelle pour le dashboard (remplace le persona déclaratif) : à cadrer comme itération dédiée avec entrée `adr.md`, implique une dépendance de hash de mot de passe et une gestion de session.
+6. Notifications in-app + demande de permission navigateur à la réception d'un formulaire.
+7. Carte de France Leaflet avec les implantations Sport dans la Ville : nécessite soit un accès réseau sortant pour récupérer les vraies adresses (indisponible sur cette VM), soit que le développeur fournisse lui-même la liste de lieux à coder en dur.
+8. Création de nouveaux terrains depuis l'interface admin.
+9. Upload réel de photo (S3) : nouvelle dépendance, bucket, route API de lecture ; à cadrer comme itération dédiée.
+10. shadcn + Tailwind : **fait** hors processus normal pendant l'itération 3bis (migration complète, voir note ADR à ajouter), sur demande explicite et assumée du développeur (« on my responsibility »), en dehors du cadrage initial qui l'avait explicitement reporté. ⚠️ Une entrée `adr.md` reste à écrire pour documenter cette décision — pas encore faite.

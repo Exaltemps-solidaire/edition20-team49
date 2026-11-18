@@ -74,6 +74,8 @@ export type Incident = {
   photoUrl?: string;
   etat: EtatIncident;
   creeLe: string;
+  prestataire?: string;
+  eta?: string;
 };
 
 const niveauxUrgence: NiveauUrgence[] = ["faible", "moderee", "haute"];
@@ -82,6 +84,38 @@ let prochainId = 1;
 
 export function incidentsDe(equipementId: string): Incident[] {
   return incidents.filter((incident) => incident.equipementId === equipementId);
+}
+
+export function tousLesIncidents(): Incident[] {
+  return incidents;
+}
+
+export function trouverIncident(id: string): Incident | undefined {
+  return incidents.find((incident) => incident.id === id);
+}
+
+export function affecterPrestataire(
+  id: string,
+  donnees: { prestataire?: unknown; eta?: unknown }
+): Incident | ErreurValidation {
+  const incident = trouverIncident(id);
+  if (!incident) return { erreur: "Incident introuvable." };
+  const prestataire = typeof donnees.prestataire === "string" ? donnees.prestataire.trim() : "";
+  const eta = typeof donnees.eta === "string" ? donnees.eta.trim() : "";
+  if (!prestataire || !eta) {
+    return { erreur: "Le prestataire et l'ETA sont obligatoires." };
+  }
+  incident.prestataire = prestataire;
+  incident.eta = eta;
+  incident.etat = "en_cours";
+  return incident;
+}
+
+export function marquerResolu(id: string): Incident | ErreurValidation {
+  const incident = trouverIncident(id);
+  if (!incident) return { erreur: "Incident introuvable." };
+  incident.etat = "resolu";
+  return incident;
 }
 
 export type ErreurValidation = { erreur: string };

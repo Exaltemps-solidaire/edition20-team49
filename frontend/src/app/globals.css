@@ -1,3 +1,7 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
 :root {
   --sdv-marine: #1f3346;
   --sdv-bleu: #6294c2;
@@ -7,8 +11,65 @@
   --sdv-vert-anis-fonce: #ccd129;
   --sdv-blanc: #ffffff;
 
+  --radius: 0.75rem;
+
   --background: var(--sdv-bleu-clair);
   --foreground: var(--sdv-marine);
+  --card: var(--sdv-blanc);
+  --card-foreground: var(--sdv-marine);
+  --popover: var(--sdv-blanc);
+  --popover-foreground: var(--sdv-marine);
+  --primary: var(--sdv-bleu);
+  --primary-foreground: var(--sdv-blanc);
+  --secondary: var(--sdv-bleu-clair-2);
+  --secondary-foreground: var(--sdv-marine);
+  --muted: var(--sdv-bleu-clair);
+  --muted-foreground: var(--sdv-marine);
+  --accent: var(--sdv-vert-anis);
+  --accent-foreground: var(--sdv-marine);
+  --destructive: #b3261e;
+  --destructive-foreground: var(--sdv-blanc);
+  --border: var(--sdv-bleu-clair-2);
+  --input: var(--sdv-bleu-clair-2);
+  --ring: var(--sdv-bleu);
+}
+
+@theme inline {
+  --color-marine: var(--sdv-marine);
+  --color-bleu: var(--sdv-bleu);
+  --color-bleu-clair: var(--sdv-bleu-clair);
+  --color-bleu-clair-2: var(--sdv-bleu-clair-2);
+  --color-vert-anis: var(--sdv-vert-anis);
+  --color-vert-anis-fonce: var(--sdv-vert-anis-fonce);
+  --color-blanc: var(--sdv-blanc);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-corps);
+  --font-titres: var(--font-titres);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 html {
@@ -25,17 +86,8 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-corps), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 a {
@@ -57,82 +109,11 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
-button,
-input,
-select {
-  font-family: inherit;
-  font-size: 1rem;
-}
-
-button[type="submit"],
-button:not([type="button"]) {
-  background: var(--sdv-bleu);
-  color: var(--sdv-blanc);
-  border: none;
-  border-radius: 999px;
-  padding: 0.65rem 1.5rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease;
-}
-
-button[type="submit"]:hover,
-button:not([type="button"]):hover {
-  background: var(--sdv-marine);
-  transform: translateY(-1px);
-}
-
-button[type="button"] {
-  background: transparent;
-  color: var(--sdv-marine);
-  border: 2px solid var(--sdv-bleu-clair-2);
-  border-radius: 999px;
-  padding: 0.6rem 1.4rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-input,
-select {
-  border: 2px solid var(--sdv-bleu-clair-2);
-  border-radius: 12px;
-  padding: 0.6rem 0.9rem;
-  background: var(--sdv-blanc);
-  color: var(--sdv-marine);
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--sdv-bleu);
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  background: var(--sdv-blanc);
-  border-radius: 16px;
-  padding: 1.25rem;
-  margin-top: 0.75rem;
-  box-shadow: 0 2px 12px rgba(31, 51, 70, 0.08);
-}
-
-form > div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-form label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-[role="alert"] {
-  color: #b3261e;
-  font-weight: 600;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
 }

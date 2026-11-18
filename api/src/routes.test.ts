@@ -60,6 +60,49 @@ describe("POST /api/v1/incidents", () => {
   });
 });
 
+describe("PATCH /api/v1/incidents/:id", () => {
+  it("refuse l'affectation d'un prestataire sans ETA", () => {
+    const creation = router(
+      "POST",
+      "/api/v1/incidents",
+      JSON.stringify({ equipementId: "t2-e1", urgence: "haute" }),
+    );
+    const incident = creation.corps as { id: string };
+
+    const reponse = router(
+      "PATCH",
+      `/api/v1/incidents/${incident.id}`,
+      JSON.stringify({ prestataire: "Acme" }),
+    );
+    expect(reponse.statut).toBe(400);
+  });
+
+  it("affecte un prestataire puis marque l'incident résolu", () => {
+    const creation = router(
+      "POST",
+      "/api/v1/incidents",
+      JSON.stringify({ equipementId: "t2-e1", urgence: "haute" }),
+    );
+    const incident = creation.corps as { id: string };
+
+    const affectation = router(
+      "PATCH",
+      `/api/v1/incidents/${incident.id}`,
+      JSON.stringify({ prestataire: "Acme", eta: "2026-11-20" }),
+    );
+    expect(affectation.statut).toBe(200);
+    expect((affectation.corps as { etat: string }).etat).toBe("en_cours");
+
+    const resolution = router(
+      "PATCH",
+      `/api/v1/incidents/${incident.id}`,
+      JSON.stringify({ etat: "resolu" }),
+    );
+    expect(resolution.statut).toBe(200);
+    expect((resolution.corps as { etat: string }).etat).toBe("resolu");
+  });
+});
+
 describe("trouverTerrain", () => {
   it("retrouve un terrain existant par id et pas un id inconnu", () => {
     expect(trouverTerrain("t1")?.nom).toBe("Terrain Les Minguettes");

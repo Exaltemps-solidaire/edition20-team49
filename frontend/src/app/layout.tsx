@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Anton, Inter } from "next/font/google";
+import { Anton, Inter, Geist } from "next/font/google";
 import "./globals.css";
 import { PersonaProvider } from "./persona";
 import PersonaBandeau from "./PersonaBandeau";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const fontTitres = Anton({
   variable: "--font-titres",
@@ -22,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${fontTitres.variable} ${fontCorps.variable}`}>
+    <html lang="fr" className={cn(fontTitres.variable, fontCorps.variable, "font-sans", geist.variable)}>
       <body>
         <PersonaProvider>
           <PersonaBandeau />

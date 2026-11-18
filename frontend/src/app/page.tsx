@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import styles from "./page.module.css";
+import { Card, CardContent } from "@/components/ui/card";
 
 type TerrainResume = {
   id: string;
@@ -26,18 +26,22 @@ export default function Accueil() {
   }, []);
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
+    <div className="flex flex-1 flex-col items-center px-6 py-10">
+      <main className="flex w-full max-w-xl flex-col gap-5">
         <h1>Terrains</h1>
         {erreur && <p>Impossible de charger la liste des terrains.</p>}
         {!erreur && !terrains && <p>Chargement…</p>}
         {terrains && (
-          <ul className={styles.listeTerrains}>
+          <ul className="flex list-none flex-col gap-3 p-0">
             {terrains.map((terrain) => (
               <li key={terrain.id}>
                 <Link href={`/terrains/${terrain.id}`}>
-                  {terrain.nom} — {terrain.ville} ({terrain.nombreEquipements}{" "}
-                  équipements)
+                  <Card className="transition-transform hover:-translate-y-0.5 hover:ring-bleu">
+                    <CardContent className="font-semibold text-marine">
+                      {terrain.nom} — {terrain.ville} ({terrain.nombreEquipements}{" "}
+                      équipements)
+                    </CardContent>
+                  </Card>
                 </Link>
               </li>
             ))}

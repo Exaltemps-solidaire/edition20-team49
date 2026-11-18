@@ -23,8 +23,11 @@ export default function PersonaBandeau() {
         <span>Terrains</span>
       </Link>
       <span className="flex items-center gap-4">
-        <Link href="/declarer-incident" className="font-semibold text-vert-anis">
-          Déclarer un incident
+        <Link
+          href="/declarer-incident"
+          className="rounded-md bg-vert-anis px-3 py-1.5 font-bold text-marine shadow-sm hover:brightness-95"
+        >
+          + Déclarer un incident
         </Link>
         {persona ? (
           <span>

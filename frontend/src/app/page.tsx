@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePersona } from "./persona";
 
 type TerrainResume = {
   id: string;
@@ -12,8 +14,14 @@ type TerrainResume = {
 };
 
 export default function Accueil() {
+  const { persona } = usePersona();
+  const router = useRouter();
   const [terrains, setTerrains] = useState<TerrainResume[] | null>(null);
   const [erreur, setErreur] = useState(false);
+
+  useEffect(() => {
+    if (persona?.id === "directeur") router.replace("/tableau-de-bord");
+  }, [persona, router]);
 
   useEffect(() => {
     fetch("/api/v1/terrains")
@@ -24,6 +32,10 @@ export default function Accueil() {
       .then(setTerrains)
       .catch(() => setErreur(true));
   }, []);
+
+  if (persona?.id === "directeur") {
+    return null;
+  }
 
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-10">

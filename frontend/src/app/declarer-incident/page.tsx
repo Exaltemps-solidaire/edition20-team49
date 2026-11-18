@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,43 +14,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type TerrainResume = { id: string; nom: string; ville: string };
-type Equipement = { id: string; nom: string };
-type TerrainDetail = { id: string; equipements: Equipement[] };
-
 function FormulaireDeclaration() {
   const parametres = useSearchParams();
-  const [terrains, setTerrains] = useState<TerrainResume[] | null>(null);
-  const [terrainId, setTerrainId] = useState(parametres.get("terrain") ?? "");
-  const [equipements, setEquipements] = useState<Equipement[]>([]);
-  const [equipementId, setEquipementId] = useState("");
-  const [lieu, setLieu] = useState("");
+  const [terrainNom, setTerrainNom] = useState(parametres.get("terrain") ?? "");
+  const [ville, setVille] = useState(parametres.get("ville") ?? "");
+  const [codePostal, setCodePostal] = useState("");
+  const [adresse, setAdresse] = useState("");
   const [description, setDescription] = useState("");
   const [urgence, setUrgence] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoye, setEnvoye] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/v1/terrains")
-      .then((r) => r.json())
-      .then(setTerrains)
-      .catch(() => setTerrains([]));
-  }, []);
-
-  useEffect(() => {
-    if (!terrainId) return;
-    fetch(`/api/v1/terrains/${terrainId}`)
-      .then((r) => r.json())
-      .then((terrain: TerrainDetail) => setEquipements(terrain.equipements ?? []))
-      .catch(() => setEquipements([]));
-  }, [terrainId]);
-
-  const choisirTerrain = (v: string | null) => {
-    setTerrainId(v ?? "");
-    setEquipementId("");
-    setEquipements([]);
-  };
 
   const envoyer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +32,15 @@ function FormulaireDeclaration() {
     const reponse = await fetch("/api/v1/incidents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ equipementId, lieu, description, urgence, photoUrl }),
+      body: JSON.stringify({
+        terrainNom,
+        ville,
+        codePostal,
+        adresse,
+        description,
+        urgence,
+        photoUrl,
+      }),
     });
     if (!reponse.ok) {
       const corps = await reponse.json().catch(() => null);
@@ -72,7 +54,7 @@ function FormulaireDeclaration() {
     return (
       <Card>
         <CardContent className="flex flex-col gap-3">
-          <p>Incident déclaré. Il apparaît sur la fiche du terrain et au tableau de bord.</p>
+          <p>Incident déclaré. Il apparaît au tableau de bord du gestionnaire.</p>
           <Button type="button" variant="secondary" className="self-start" onClick={() => setEnvoye(false)}>
             Déclarer un autre incident
           </Button>
@@ -86,38 +68,36 @@ function FormulaireDeclaration() {
       <CardContent>
         <form className="flex flex-col gap-3" onSubmit={envoyer}>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="terrain">Terrain</Label>
-            <Select value={terrainId} onValueChange={choisirTerrain}>
-              <SelectTrigger id="terrain" className="w-full">
-                <SelectValue placeholder="— choisir un terrain —" />
-              </SelectTrigger>
-              <SelectContent>
-                {(terrains ?? []).map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.nom} — {t.ville}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="terrainNom">Nom du terrain</Label>
+            <Input
+              id="terrainNom"
+              value={terrainNom}
+              onChange={(e) => setTerrainNom(e.target.value)}
+              placeholder="Ex. Terrain du parc des Minguettes"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="ville">Ville</Label>
+              <Input id="ville" value={ville} onChange={(e) => setVille(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="codePostal">Code postal</Label>
+              <Input
+                id="codePostal"
+                value={codePostal}
+                onChange={(e) => setCodePostal(e.target.value)}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="equipement">Équipement concerné</Label>
-            <Select value={equipementId} onValueChange={(v) => setEquipementId(v ?? "")} disabled={!terrainId}>
-              <SelectTrigger id="equipement" className="w-full">
-                <SelectValue placeholder="— choisir un équipement —" />
-              </SelectTrigger>
-              <SelectContent>
-                {equipements.map((eq) => (
-                  <SelectItem key={eq.id} value={eq.id}>
-                    {eq.nom}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="lieu">Lieu précis</Label>
-            <Input id="lieu" value={lieu} onChange={(e) => setLieu(e.target.value)} />
+            <Label htmlFor="adresse">Adresse précise</Label>
+            <Input
+              id="adresse"
+              value={adresse}
+              onChange={(e) => setAdresse(e.target.value)}
+              placeholder="Rue, numéro, point de repère…"
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="description">Description</Label>
@@ -145,7 +125,7 @@ function FormulaireDeclaration() {
               {erreur}
             </p>
           )}
-          <Button type="submit" disabled={!equipementId} className="self-start">
+          <Button type="submit" disabled={!terrainNom || !urgence} className="self-start">
             Envoyer
           </Button>
         </form>

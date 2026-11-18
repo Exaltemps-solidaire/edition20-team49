@@ -5,7 +5,6 @@
 import {
   affecterPrestataire,
   creerIncident,
-  incidentsDe,
   marquerResolu,
   terrains,
   tousLesIncidents,
@@ -37,14 +36,7 @@ export function router(methode: string, url: string, corpsBrut?: string): Repons
     if (!terrain) {
       return { statut: 404 };
     }
-    const corps = {
-      ...terrain,
-      equipements: terrain.equipements.map((equipement) => ({
-        ...equipement,
-        incidents: incidentsDe(equipement.id),
-      })),
-    };
-    return { statut: 200, corps };
+    return { statut: 200, corps: terrain };
   }
 
   if (methode === "POST" && chemin === "/api/v1/incidents") {
@@ -62,19 +54,7 @@ export function router(methode: string, url: string, corpsBrut?: string): Repons
   }
 
   if (methode === "GET" && chemin === "/api/v1/incidents") {
-    const corps = tousLesIncidents().map((incident) => {
-      const terrain = terrains.find((t) =>
-        t.equipements.some((e) => e.id === incident.equipementId)
-      );
-      const equipement = terrain?.equipements.find((e) => e.id === incident.equipementId);
-      return {
-        ...incident,
-        terrainId: terrain?.id,
-        terrainNom: terrain?.nom,
-        equipementNom: equipement?.nom,
-      };
-    });
-    return { statut: 200, corps };
+    return { statut: 200, corps: tousLesIncidents() };
   }
 
   const correspondancePatch = chemin.match(/^\/api\/v1\/incidents\/([^/]+)$/);

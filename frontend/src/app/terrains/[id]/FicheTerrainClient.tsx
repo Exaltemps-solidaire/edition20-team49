@@ -6,23 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 
 type EtatEquipement = "bon" | "a_surveiller" | "hors_service";
-type NiveauUrgence = "faible" | "moderee" | "haute";
-
-type Incident = {
-  id: string;
-  lieu: string;
-  description: string;
-  urgence: NiveauUrgence;
-  photoUrl?: string;
-  etat: "nouveau" | "en_cours" | "resolu";
-};
 
 type Equipement = {
   id: string;
   nom: string;
   type: string;
   etat: EtatEquipement;
-  incidents: Incident[];
 };
 
 type Terrain = {
@@ -30,12 +19,6 @@ type Terrain = {
   nom: string;
   ville: string;
   equipements: Equipement[];
-};
-
-const libelleUrgence: Record<NiveauUrgence, string> = {
-  faible: "Faible",
-  moderee: "Modérée",
-  haute: "Haute",
 };
 
 const libelleEtat: Record<EtatEquipement, string> = {
@@ -93,18 +76,10 @@ export default function FicheTerrainClient({ id }: { id: string }) {
                           {libelleEtat[equipement.etat]}
                         </span>
                       </p>
-                      {equipement.incidents.length > 0 && (
-                        <ul className="flex list-none flex-col gap-1 p-0 text-sm text-muted-foreground">
-                          {equipement.incidents.map((incident) => (
-                            <li key={incident.id}>
-                              [{incident.etat}] {incident.lieu} — {incident.description} (urgence
-                              : {libelleUrgence[incident.urgence]})
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                       <Link
-                        href={`/declarer-incident?terrain=${terrain.id}`}
+                        href={`/declarer-incident?terrain=${encodeURIComponent(
+                          terrain.nom
+                        )}&ville=${encodeURIComponent(terrain.ville)}`}
                         className={buttonVariants({ variant: "secondary", className: "self-start" })}
                       >
                         Déclarer un incident

@@ -27,68 +27,70 @@ describe("router", () => {
 });
 
 describe("POST /api/v1/incidents", () => {
-  it("refuse une déclaration sans urgence ni équipement valide", () => {
-    const reponse = router("POST", "/api/v1/incidents", JSON.stringify({ lieu: "Angle nord" }));
+  it("refuse une déclaration sans urgence ni nom de terrain", () => {
+    const reponse = router("POST", "/api/v1/incidents", JSON.stringify({ ville: "Lyon" }));
     expect(reponse.statut).toBe(400);
 
-    const reponseEquipementInconnu = router(
+    const reponseSansUrgence = router(
       "POST",
       "/api/v1/incidents",
-      JSON.stringify({ equipementId: "inconnu", urgence: "haute" }),
+      JSON.stringify({ terrainNom: "Terrain improvisé" }),
     );
-    expect(reponseEquipementInconnu.statut).toBe(400);
+    expect(reponseSansUrgence.statut).toBe(400);
   });
 
-  it("rattache l'incident créé à l'équipement visé, visible sur la fiche du terrain", () => {
+  it("crée l'incident avec un terrain saisi librement, visible dans la liste globale", () => {
     const creation = router(
       "POST",
       "/api/v1/incidents",
       JSON.stringify({
-        equipementId: "t1-e1",
-        lieu: "Angle nord",
+        terrainNom: "Terrain improvisé",
+        ville: "Lyon",
+        codePostal: "69001",
+        adresse: "12 rue du Stade",
         description: "Filet déchiré",
         urgence: "moderee",
       }),
     );
     expect(creation.statut).toBe(201);
 
-    const fiche = router("GET", "/api/v1/terrains/t1");
-    const terrain = fiche.corps as { equipements: Array<{ id: string; incidents: Array<{ etat: string }> }> };
-    const equipement = terrain.equipements.find((e) => e.id === "t1-e1");
-    expect(equipement?.incidents).toHaveLength(1);
-    expect(equipement?.incidents[0].etat).toBe("nouveau");
+    const liste = router("GET", "/api/v1/incidents");
+    const incidents = liste.corps as Array<{ id: string; terrainNom: string; etat: string }>;
+    const incident = incidents.find((i) => i.id === (creation.corps as { id: string }).id);
+    expect(incident?.terrainNom).toBe("Terrain improvisé");
+    expect(incident?.etat).toBe("nouveau");
   });
 });
 
 describe("PATCH /api/v1/incidents/:id", () => {
-  it("refuse l'affectation d'un prestataire sans ETA", () => {
+  it("refuse l'affectation sans prestataire", () => {
     const creation = router(
       "POST",
       "/api/v1/incidents",
-      JSON.stringify({ equipementId: "t2-e1", urgence: "haute" }),
+      JSON.stringify({ terrainNom: "Terrain Les Minguettes", urgence: "haute" }),
     );
     const incident = creation.corps as { id: string };
 
     const reponse = router(
       "PATCH",
       `/api/v1/incidents/${incident.id}`,
-      JSON.stringify({ prestataire: "Acme" }),
+      JSON.stringify({ dateIntervention: "2026-11-20" }),
     );
     expect(reponse.statut).toBe(400);
   });
 
-  it("affecte un prestataire puis marque l'incident résolu", () => {
+  it("affecte un prestataire sans date d'intervention puis marque l'incident résolu", () => {
     const creation = router(
       "POST",
       "/api/v1/incidents",
-      JSON.stringify({ equipementId: "t2-e1", urgence: "haute" }),
+      JSON.stringify({ terrainNom: "Terrain Les Minguettes", urgence: "haute" }),
     );
     const incident = creation.corps as { id: string };
 
     const affectation = router(
       "PATCH",
       `/api/v1/incidents/${incident.id}`,
-      JSON.stringify({ prestataire: "Acme", eta: "2026-11-20" }),
+      JSON.stringify({ prestataire: "Acme" }),
     );
     expect(affectation.statut).toBe(200);
     expect((affectation.corps as { etat: string }).etat).toBe("en_cours");

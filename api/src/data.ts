@@ -65,26 +65,26 @@ export function trouverEquipement(id: string): Equipement | undefined {
 export type NiveauUrgence = "faible" | "moderee" | "haute";
 export type EtatIncident = "nouveau" | "en_cours" | "resolu";
 
+// Depuis l'itération 6, la déclaration est globale et ne suppose plus un terrain déjà
+// catalogué : le terrain est saisi librement, avec une adresse structurée.
 export type Incident = {
   id: string;
-  equipementId: string;
-  lieu: string;
+  terrainNom: string;
+  ville: string;
+  codePostal: string;
+  adresse: string;
   description: string;
   urgence: NiveauUrgence;
   photoUrl?: string;
   etat: EtatIncident;
   creeLe: string;
   prestataire?: string;
-  eta?: string;
+  dateIntervention?: string;
 };
 
 const niveauxUrgence: NiveauUrgence[] = ["faible", "moderee", "haute"];
 const incidents: Incident[] = [];
 let prochainId = 1;
-
-export function incidentsDe(equipementId: string): Incident[] {
-  return incidents.filter((incident) => incident.equipementId === equipementId);
-}
 
 export function tousLesIncidents(): Incident[] {
   return incidents;
@@ -96,17 +96,17 @@ export function trouverIncident(id: string): Incident | undefined {
 
 export function affecterPrestataire(
   id: string,
-  donnees: { prestataire?: unknown; eta?: unknown }
+  donnees: { prestataire?: unknown; dateIntervention?: unknown }
 ): Incident | ErreurValidation {
   const incident = trouverIncident(id);
   if (!incident) return { erreur: "Incident introuvable." };
   const prestataire = typeof donnees.prestataire === "string" ? donnees.prestataire.trim() : "";
-  const eta = typeof donnees.eta === "string" ? donnees.eta.trim() : "";
-  if (!prestataire || !eta) {
-    return { erreur: "Le prestataire et l'ETA sont obligatoires." };
+  if (!prestataire) {
+    return { erreur: "Le prestataire est obligatoire." };
   }
   incident.prestataire = prestataire;
-  incident.eta = eta;
+  incident.dateIntervention =
+    typeof donnees.dateIntervention === "string" ? donnees.dateIntervention.trim() : undefined;
   incident.etat = "en_cours";
   return incident;
 }
@@ -121,15 +121,17 @@ export function marquerResolu(id: string): Incident | ErreurValidation {
 export type ErreurValidation = { erreur: string };
 
 export function creerIncident(donnees: {
-  equipementId?: unknown;
-  lieu?: unknown;
+  terrainNom?: unknown;
+  ville?: unknown;
+  codePostal?: unknown;
+  adresse?: unknown;
   description?: unknown;
   urgence?: unknown;
   photoUrl?: unknown;
 }): Incident | ErreurValidation {
-  const equipementId = typeof donnees.equipementId === "string" ? donnees.equipementId : "";
-  if (!equipementId || !trouverEquipement(equipementId)) {
-    return { erreur: "L'équipement visé est obligatoire et doit exister." };
+  const terrainNom = typeof donnees.terrainNom === "string" ? donnees.terrainNom.trim() : "";
+  if (!terrainNom) {
+    return { erreur: "Le nom du terrain est obligatoire." };
   }
   const urgence = typeof donnees.urgence === "string" ? donnees.urgence : "";
   if (!niveauxUrgence.includes(urgence as NiveauUrgence)) {
@@ -137,8 +139,10 @@ export function creerIncident(donnees: {
   }
   const incident: Incident = {
     id: `inc-${prochainId++}`,
-    equipementId,
-    lieu: typeof donnees.lieu === "string" ? donnees.lieu : "",
+    terrainNom,
+    ville: typeof donnees.ville === "string" ? donnees.ville : "",
+    codePostal: typeof donnees.codePostal === "string" ? donnees.codePostal : "",
+    adresse: typeof donnees.adresse === "string" ? donnees.adresse : "",
     description: typeof donnees.description === "string" ? donnees.description : "",
     urgence: urgence as NiveauUrgence,
     photoUrl: typeof donnees.photoUrl === "string" ? donnees.photoUrl : undefined,

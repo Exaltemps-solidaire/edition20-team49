@@ -13,14 +13,15 @@ type NiveauUrgence = "faible" | "moderee" | "haute";
 
 type IncidentDashboard = {
   id: string;
-  lieu: string;
+  terrainNom: string;
+  ville?: string;
+  codePostal?: string;
+  adresse?: string;
   description: string;
   urgence: NiveauUrgence;
   etat: EtatIncident;
-  terrainNom?: string;
-  equipementNom?: string;
   prestataire?: string;
-  eta?: string;
+  dateIntervention?: string;
 };
 
 const libelleUrgence: Record<NiveauUrgence, string> = {
@@ -46,7 +47,7 @@ export default function TableauDeBord() {
   const [incidents, setIncidents] = useState<IncidentDashboard[] | null>(null);
   const [affectationOuverte, setAffectationOuverte] = useState<string | null>(null);
   const [prestataire, setPrestataire] = useState("");
-  const [eta, setEta] = useState("");
+  const [dateIntervention, setDateIntervention] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
 
   const charger = () => {
@@ -75,7 +76,7 @@ export default function TableauDeBord() {
   const ouvrirAffectation = (id: string) => {
     setAffectationOuverte(id);
     setPrestataire("");
-    setEta("");
+    setDateIntervention("");
     setErreur(null);
   };
 
@@ -84,7 +85,7 @@ export default function TableauDeBord() {
     const reponse = await fetch(`/api/v1/incidents/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prestataire, eta }),
+      body: JSON.stringify({ prestataire, dateIntervention }),
     });
     if (!reponse.ok) {
       const corps = await reponse.json().catch(() => null);
@@ -140,15 +141,24 @@ export default function TableauDeBord() {
                         <Card>
                           <CardContent className="flex flex-col gap-2 text-sm">
                             <p className="font-semibold text-marine">
-                              {incident.terrainNom} — {incident.equipementNom}
+                              {incident.terrainNom}
+                              {incident.ville ? ` — ${incident.ville}` : ""}
                             </p>
-                            <p>{incident.description || incident.lieu}</p>
+                            {(incident.adresse || incident.codePostal) && (
+                              <p className="text-muted-foreground">
+                                {[incident.adresse, incident.codePostal].filter(Boolean).join(", ")}
+                              </p>
+                            )}
+                            <p>{incident.description}</p>
                             <p className="text-muted-foreground">
                               Urgence : {libelleUrgence[incident.urgence]}
                             </p>
                             {incident.prestataire && (
                               <p className="text-muted-foreground">
-                                Prestataire : {incident.prestataire} (ETA {incident.eta})
+                                Prestataire : {incident.prestataire}
+                                {incident.dateIntervention
+                                  ? ` (intervention prévue le ${incident.dateIntervention})`
+                                  : ""}
                               </p>
                             )}
                             {colonne.etat === "nouveau" &&
@@ -169,11 +179,13 @@ export default function TableauDeBord() {
                                     />
                                   </div>
                                   <div className="flex flex-col gap-1">
-                                    <Label htmlFor={`eta-${incident.id}`}>ETA</Label>
+                                    <Label htmlFor={`date-intervention-${incident.id}`}>
+                                      Date d&apos;intervention prévue (optionnel)
+                                    </Label>
                                     <Input
-                                      id={`eta-${incident.id}`}
-                                      value={eta}
-                                      onChange={(e) => setEta(e.target.value)}
+                                      id={`date-intervention-${incident.id}`}
+                                      value={dateIntervention}
+                                      onChange={(e) => setDateIntervention(e.target.value)}
                                     />
                                   </div>
                                   {erreur && (

@@ -168,6 +168,36 @@
   - `frontend/src/app/tableau-de-bord/page.tsx` — bandeau de synthèse des incidents en urgence haute, tri des cartes par urgence dans chaque colonne.
 - ⚠️ Rappel : les incidents restent en mémoire (pas de base de données) — toujours un écart au contrat de déployabilité, déjà signalé en itération 2.
 
+## Itération 6 : bouton de déclaration plus visible, adresse structurée, accueil directeur = tableau de bord
+
+- **Demande hors passation du développeur**, reçue avec à nouveau **10 minutes restantes au total**. ✂️ Même contrainte qu'à l'itération 5 : publication directe sans tour de test de l'équipe, décision explicite du développeur.
+- ❗️ **Changement de modèle de données assumé** : sur confirmation du développeur (« on propose pas les terrains existants »), le champ terrain de la déclaration devient un texte libre, non lié au catalogue `api/src/data.ts` des 3 terrains fixes. Un incident n'est donc plus rattaché à un `equipementId` existant mais porte son propre `terrainNom` + adresse structurée (ville, code postal, adresse). Conséquence directe : la fiche d'un terrain (`/terrains/:id`) n'affiche plus les incidents de ses équipements (elle ne listait que ceux liés à un `equipementId` du catalogue, qui n'existe plus) — seul le tableau de bord du directeur reste la vue de référence des incidents. Si l'équipe veut récupérer ce lien, cadrer une itération dédiée (ce n'était plus cohérent avec « pas de terrain imposé »).
+- **Dans le périmètre** :
+  - Bouton « + Déclarer un incident » mis en évidence dans le bandeau (fond vert, texte gras), déjà global depuis l'itération 5.
+  - Formulaire de déclaration : nom de terrain en texte libre, adresse structurée (ville, code postal, adresse précise) à la place du champ « lieu » unique ; pré-remplissage du nom/ville quand on arrive depuis la fiche d'un terrain existant.
+  - Accueil (`/`) : redirige automatiquement vers `/tableau-de-bord` quand le persona actif est le directeur.
+  - Affectation d'un prestataire : l'ETA n'est plus obligatoire, renommée « Date d'intervention prévue (optionnel) ».
+- **Hors périmètre** : création/édition du catalogue des terrains existants (reste figé, 3 terrains en dur) ; retour du lien incident ↔ équipement.
+- **Critères d'acceptation** :
+  - Étant donné n'importe quel écran, le bouton de déclaration est visuellement proéminent (fond coloré) dans le bandeau.
+  - Étant donné le formulaire de déclaration, on peut saisir librement un nom de terrain, une ville et un code postal, sans qu'aucun terrain existant ne soit imposé ; l'incident créé apparaît au tableau de bord avec ces informations.
+  - Étant donné le persona directeur, l'ouverture de `/` affiche directement le tableau de bord.
+  - Étant donné un incident nouveau, l'affectation d'un prestataire sans date d'intervention est acceptée (seul le prestataire est obligatoire).
+- **Codage réel** : ~9 minutes.
+- **Tests Vitest** : mis à jour dans `api/src/routes.test.ts` (validation du nouveau modèle sans `equipementId`, affectation sans ETA obligatoire). `npm test` passe (10 tests, modifiés pour coller au nouveau modèle, pas de nouveaux cas ajoutés faute de temps).
+- **Tour de test de l'équipe** : **non fait**, décision explicite du développeur vu le temps restant. À valider par l'équipe sur `$URL_PUBLIQUE`.
+- **Démo Playwright (hors DoD)** : non mise à jour, faute de temps — à reprendre, certaines étapes existantes (choix d'équipement dans le formulaire) sont désormais caduques.
+- **Modifications** :
+  - `api/src/data.ts` — `Incident` perd `equipementId`/`lieu`/`eta`, gagne `terrainNom`/`ville`/`codePostal`/`adresse`/`dateIntervention` ; `creerIncident` valide `terrainNom` + `urgence` ; `affecterPrestataire` ne valide plus que `prestataire`.
+  - `api/src/routes.ts` — `GET /api/v1/terrains/:id` renvoie le terrain tel quel (plus de jointure incidents↔équipement) ; `GET /api/v1/incidents` renvoie les incidents sans jointure (le terrain est déjà porté par l'incident).
+  - `api/src/routes.test.ts` — tests adaptés au nouveau modèle.
+  - `frontend/src/app/declarer-incident/page.tsx` — terrain en texte libre + adresse structurée, plus de sélection d'équipement.
+  - `frontend/src/app/PersonaBandeau.tsx` — bouton de déclaration mis en évidence (fond vert anis).
+  - `frontend/src/app/page.tsx` — redirection vers `/tableau-de-bord` pour le persona directeur.
+  - `frontend/src/app/terrains/[id]/FicheTerrainClient.tsx` — retrait de l'affichage des incidents par équipement (devenu incohérent avec le nouveau modèle) ; lien de déclaration pré-rempli avec le nom/ville du terrain.
+  - `frontend/src/app/tableau-de-bord/page.tsx` — cartes affichant terrain/ville/adresse directement, champ « date d'intervention » renommé et optionnel.
+- ⚠️ Rappel toujours valable : les incidents restent en mémoire (pas de base de données).
+
 ## À venir (non détaillé, revu après chaque itération)
 
 1. Contrôle post-réparation : le RST enregistre le résultat du contrôle sur l'équipement ; l'incident ne peut être clos sans ce contrôle enregistré (couvre l'hypothèse « taux d'incidents clos avec contrôle post-réparation enregistré », cible 100 %).

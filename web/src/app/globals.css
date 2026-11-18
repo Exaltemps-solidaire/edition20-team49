@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Sport dans la Ville identity: blue #6294c2, lime #e1e474, navy #1f3346 */
+:root {
+  --radius: 0.9rem;
+  --background: #f7f9fc;
+  --foreground: #1f3346;
+  --card: #ffffff;
+  --card-foreground: #1f3346;
+  --popover: #ffffff;
+  --popover-foreground: #1f3346;
+  --primary: #6294c2;
+  --primary-foreground: #ffffff;
+  --secondary: #e1e474;
+  --secondary-foreground: #1f3346;
+  --muted: #f0f4f9;
+  --muted-foreground: #5b6b7d;
+  --accent: #dee7f2;
+  --accent-foreground: #1f3346;
+  --destructive: #d9443a;
+  --border: #e3e9f1;
+  --input: #dbe3ee;
+  --ring: #6294c2;
+  --navy: #1f3346;
+  --lime: #e1e474;
+  --lime-strong: #ccd129;
+  --brand-50: #f0f4f9;
+  --brand-100: #dee7f2;
+  --brand-700: #3f6f9c;
+  --sidebar: #1f3346;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-navy: var(--navy);
+  --color-lime: var(--lime);
+  --color-lime-strong: var(--lime-strong);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-700: var(--brand-700);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-montserrat);
+  --font-display: var(--font-anton);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+.font-display {
+  font-family: var(--font-anton), Impact, sans-serif;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+/* Leaflet sits under shadcn overlays */
+.leaflet-container {
+  z-index: 0;
+  font-family: inherit;
+  border-radius: inherit;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgb(31 51 70 / 0.15);
+}
+
+.bg-court {
+  background-image:
+    radial-gradient(circle at 85% 20%, rgb(225 228 116 / 0.35), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgb(98 148 194 / 0.35), transparent 45%);
+}
